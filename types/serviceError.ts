@@ -5,6 +5,8 @@ export enum ServiceErrors{
 
 class ServiceError extends Error {
     type: ServiceErrors
+    status: number
+    info: Response
 
     constructor(msg: string, type: ServiceErrors = ServiceErrors.unkown_error) {
         super(msg);

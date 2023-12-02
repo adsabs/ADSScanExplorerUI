@@ -13,6 +13,7 @@ interface ImageLoaderProps {
 const ImageLoader = ({ width, height, className }: ImageLoaderProps) => (
 
     <ContentLoader
+        uniqueKey="image-loader"
         className={className}
         speed={2}
         viewBox={`0 0 ${width} ${height}`}

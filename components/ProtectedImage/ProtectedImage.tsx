@@ -1,11 +1,7 @@
 import Image from 'next/image'
-import useSWR from 'swr'
 import useBootstrap from '../../hooks/useBootstrap'
-import Card from 'react-bootstrap/Card'
-import Placeholder from 'react-bootstrap/Placeholder'
-import Container from 'react-bootstrap/Container'
-import ContentLoader, { Instagram } from 'react-content-loader'
 import ImageLoader from '../ContentLoader/ImageLoader'
+import useSWR from 'swr';
 
 
 interface ProtectedImageProps {

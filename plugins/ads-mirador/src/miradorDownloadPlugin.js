@@ -46,11 +46,8 @@ class MiradorDownload extends Component {
       method: "GET",
       headers: { Authorization: `Bearer ${authToken}` },
     };
-    this.state = {
-      DPI: 600,
-    };
 
-    let url = `${pdfUrl}?id=${title}&dpi=${this.state.DPI}`;
+    let url = `${pdfUrl}?id=${title}&dpi=${this.props.defaultDPI}`;
 
     addExternalAlert(
       "Please wait while your PDF is being generated. Depending on size and number of pages this might take a few minutes."
@@ -141,6 +138,7 @@ const mapStateToProps = (state, { windowId }) => ({
     state.config.miradorAdsPlugins &&
     state.config.miradorAdsPlugins.addExternalAlert(),
   isArticle: state?.config?.miradorAdsPlugins?.isArticle,
+  defaultDPI: state?.config?.miradorAdsPlugins?.defaultDPI,
 });
 
 export default {

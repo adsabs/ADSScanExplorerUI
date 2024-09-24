@@ -136,7 +136,7 @@ const SearchResultTab = ({ onSearchComplete }: TabProps) => {
     }
 
     const tabItemThumbnail = (id: string, type: string) => {
-        return `${publicRuntimeConfig.serviceUrl}/image/thumbnail?id=${id}&type=${type}`
+        return `${publicRuntimeConfig.serviceUrl}/image/thumbnail?id=${encodeURIComponent(id)}&type=${type}`
     }
 
     useEffect(() => {

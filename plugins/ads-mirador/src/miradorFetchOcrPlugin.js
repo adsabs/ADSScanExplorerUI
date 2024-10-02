@@ -17,7 +17,7 @@ class MiradorFetchOcr extends Component {
     }
 
     let page = getCanvasIndex() + 1
-    let url = `${ocrUrl}?id=${title}&page_number=${page}`
+    let url = `${ocrUrl}?id=${encodeURIComponent(title)}&page_number=${page}`
 
     fetch(url, requestOptions)
       .then(res => {

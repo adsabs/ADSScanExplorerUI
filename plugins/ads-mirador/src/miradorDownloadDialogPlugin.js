@@ -54,7 +54,7 @@ export class MiradorDownloadDialog extends Component {
       headers: { Authorization: `Bearer ${authToken}` },
     };
 
-    let url = `${pdfUrl}?id=${title}&dpi=${this.state.defaultDPI}`;
+    let url = `${pdfUrl}?id=${encodeURIComponent(title)}&dpi=${this.state.defaultDPI}`;
     if (usePageRange) {
       url += `&page_start=${this.state.startPage}&page_end=${this.state.endPage}`;
     }

@@ -47,7 +47,7 @@ class MiradorDownload extends Component {
       headers: { Authorization: `Bearer ${authToken}` },
     };
 
-    let url = `${pdfUrl}?id=${title}&dpi=${this.props.defaultDPI}`;
+    let url = `${pdfUrl}?id=${encodeURIComponent(title)}&dpi=${this.props.defaultDPI}`;
 
     addExternalAlert(
       "Please wait while your PDF is being generated. Depending on size and number of pages this might take a few minutes."

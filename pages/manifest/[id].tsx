@@ -65,14 +65,29 @@ const Manifest: NextPage<ManifestProps> = ({
     ],
     requests: {
       preprocessors: [
-        (url, options) =>
-          url.match(publicRuntimeConfig.serviceUrl) && {
-            ...options,
-            headers: {
-              Authorization: `${authData?.token_type} ${authData?.access_token}`,
-            },
-          },
-      ],
+        (url, options) => {
+          const serviceUrl = publicRuntimeConfig.serviceUrl;
+          const serviceHost = new URL(serviceUrl).host; // includes hostname:port
+          const urlHost = (() => {
+            try {
+              return new URL(url).host;
+            } catch {
+              return null;
+            }
+          })();
+
+          if (urlHost === serviceHost) {
+            return {
+              ...options,
+              headers: {
+                Authorization: `${authData?.token_type} ${authData?.access_token}`
+              }
+            };
+          }
+
+          return undefined;
+        }
+      ]
     },
     osdConfig: {
       alwaysBlend: false,

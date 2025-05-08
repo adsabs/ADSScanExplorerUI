@@ -8,7 +8,7 @@ interface BootstrapType  {
     ratelimit: number
     anonymous: boolean
     client_secret: string
-    expire_in: string
+    expires_at: string
     refresh_token: string
 }
 

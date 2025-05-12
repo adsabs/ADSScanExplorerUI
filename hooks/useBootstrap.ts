@@ -23,7 +23,7 @@ function useBootstrap() {
 
     if (!error && data) {
         // Add Z to correctly format timestamp as it is in UTC
-        const expiry = new Date(data.expire_in + 'Z')
+        const expiry = new Date(data.expires_at + 'Z')
         if (expiry.getTime() <= Date.now()) {
             mutate([publicRuntimeConfig.bootstrapServiceUrl, cookies])
         }

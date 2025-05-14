@@ -84,13 +84,13 @@ const Manifest: NextPage<ManifestProps> = ({
             }
           })();
       
-          // Check exact match (original behavior) or domain suffix match
+          // Check if the URL host matches the service host or if it ends with a trusted domain suffix
+          // Scix vs ads 
           if (urlHost === serviceHost || 
               (trustedDomainSuffixes.some(suffix => urlHost && urlHost.endsWith(suffix)))) {
             return {
               ...options,
               headers: {
-                // Preserve existing header behavior
                 Authorization: `${authData?.token_type} ${authData?.access_token}`
               }
             };

@@ -66,8 +66,16 @@ const Manifest: NextPage<ManifestProps> = ({
     requests: {
       preprocessors: [
         (url, options) => {
+          // Get trusted domains from environment variable
+          const trustedDomainSuffixes = (process.env.NEXT_PUBLIC_TRUSTED_DOMAINS || '')
+            .split(',')
+            .map(domain => domain.trim())
+            .filter(Boolean);
+          
+          // Still include the original service host for backward compatibility
           const serviceUrl = publicRuntimeConfig.serviceUrl;
-          const serviceHost = new URL(serviceUrl).host; // includes hostname:port
+          const serviceHost = new URL(serviceUrl).host;
+          
           const urlHost = (() => {
             try {
               return new URL(url).host;
@@ -75,16 +83,19 @@ const Manifest: NextPage<ManifestProps> = ({
               return null;
             }
           })();
-
-          if (urlHost === serviceHost) {
+      
+          // Check exact match (original behavior) or domain suffix match
+          if (urlHost === serviceHost || 
+              (trustedDomainSuffixes.some(suffix => urlHost && urlHost.endsWith(suffix)))) {
             return {
               ...options,
               headers: {
+                // Preserve existing header behavior
                 Authorization: `${authData?.token_type} ${authData?.access_token}`
               }
             };
           }
-
+      
           return undefined;
         }
       ]

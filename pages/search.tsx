@@ -28,7 +28,7 @@ const { publicRuntimeConfig } = getConfig()
 const Search: NextPage = () => {
     const router = useRouter()
     const { query, asPath, basePath, } = router
-    const { t: tab = "article", page, limit, sort: sortType = 'bibcode', order = 'asc' } = query
+    const { t: tab = "article", page = '1', limit = '10', sort: sortType = 'bibcode', order = 'asc' } = query
 
     const [itemCount, setItemCount] = useState<number>(0)
 
@@ -122,7 +122,7 @@ interface TabProps {
 
 const SearchResultTab = ({ onSearchComplete }: TabProps) => {
     const router = useRouter()
-    const { q, page, limit, t: tab = 'article', sort = 'bibcode', order = 'asc' } = router.query
+    const { q, page = '1', limit = '10', t: tab = 'article', sort = 'bibcode', order = 'asc' } = router.query
 
     const searchUrl = `${publicRuntimeConfig.metadataServiceUrl}/${tab}/search`
     const searchQueries = { q: q, page: page, limit: limit, sort: `${sort}_${order}` }
@@ -153,8 +153,8 @@ const SearchResultTab = ({ onSearchComplete }: TabProps) => {
     if (data.total == 0) {
         if (tab == 'article' && (data.extra_collection_count + data.extra_page_count > 0)) {
             return <p className="text-center">
-                We found <Link href={{ pathname: "/search", query: { ...router.query, t: "collection" } }}><a>{data.extra_collection_count} collections </a></Link> 
-                and <Link href={{ pathname: "/search", query: { ...router.query, t: "page" } }}><a>{data.extra_page_count} pages </a></Link>  
+                We found <Link href={{ pathname: "/search", query: { ...router.query, t: "collection" } }}><a>{data.extra_collection_count} collections </a></Link>
+                and <Link href={{ pathname: "/search", query: { ...router.query, t: "page" } }}><a>{data.extra_page_count} pages </a></Link>
                 but no articles were found for the query <b>{q}</b>`
             </p>
         } else {
@@ -164,9 +164,13 @@ const SearchResultTab = ({ onSearchComplete }: TabProps) => {
         }
     }
 
-    if (data.pageCount < Number(page)) onPaginationChanged(1, Number(limit))
+    useEffect(() => {
+        if (data && data.pageCount < Number(page)) {
+            onPaginationChanged(1, Number(limit))
+        }
+    }, [data, page, limit])
 
-
+    if (data.pageCount < Number(page)) return null
 
     return (
         <>

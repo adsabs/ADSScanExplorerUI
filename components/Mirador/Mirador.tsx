@@ -11,6 +11,7 @@ interface MiradorProps {
  */
 const Mirador = ({ config }: MiradorProps) => {
     useEffect(() => {
+        let cancelled = false;
         const initializeMirador = async () => {
             const mirador = (await import("mirador/dist/es/src/index")).default;
             const imageToolsPlugin = (await import("mirador-image-tools")).miradorImageToolsPlugin;
@@ -19,16 +20,15 @@ const Mirador = ({ config }: MiradorProps) => {
             const nextManifestPlugin = (await import("mirador-ads-plugin")).miradorNextManifestPlugin;
             const closeButtonPlugin = (await import("mirador-ads-plugin")).miradorCloseButtonPlugin;
             const fetchOcrPlugin = (await import("mirador-ads-plugin")).miradorFetchOcrPlugin;
-            const miradorInstance = mirador.viewer(config, [imageToolsPlugin, downloadPlugin, downloadDialogPlugin, nextManifestPlugin, closeButtonPlugin, fetchOcrPlugin]);
-    
-            // Example of subscribing to state
-            // miradorInstance.store.subscribe(() => {
-            //   let state = miradorInstance.store.getState();
-            //   console.log(state.windows);
-            // });
-
+            if (cancelled) return;
+            mirador.viewer(config, [imageToolsPlugin, downloadPlugin, downloadDialogPlugin, nextManifestPlugin, closeButtonPlugin, fetchOcrPlugin]);
         };
         initializeMirador();
+        return () => {
+            cancelled = true;
+            const el = document.getElementById(config.id);
+            if (el) el.innerHTML = '';
+        };
     }, [config]);
 
     return (

@@ -6,30 +6,43 @@ import ServiceError from "../types/serviceError";
 
 const fetchGeneric = <T>(url, headers) =>
   fetch(url, { headers: headers })
-    .then((resp) => Promise.all([resp, resp.json()]))
-    .then(([resp, data]) => {
-      if (!resp.ok) {
-        if (data?.message) {
-          const error = new ServiceError(data.message, data?.type);
-          error.status = resp.status;
-          error.info = resp;
-          throw error;
-        } else if (data?.error) {
-          const error = new ServiceError(data.error);
-          error.status = resp.status;
-          error.info = resp;
-          throw error;
-        } else {
+    .then((resp) => {
+      const contentType = resp.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        if (!resp.ok) {
           const error = new ServiceError(
-            "Sorry! An unexpected error occured while fetching the data"
+            `Server returned ${resp.status} with non-JSON response`
           );
           error.status = resp.status;
           error.info = resp;
           throw error;
         }
-      } else {
-        return data as T;
+        return resp.text().then(() => ({} as T));
       }
+      return resp.json().then((data) => {
+        if (!resp.ok) {
+          if (data?.message) {
+            const error = new ServiceError(data.message, data?.type);
+            error.status = resp.status;
+            error.info = resp;
+            throw error;
+          } else if (data?.error) {
+            const error = new ServiceError(data.error);
+            error.status = resp.status;
+            error.info = resp;
+            throw error;
+          } else {
+            const error = new ServiceError(
+              "Sorry! An unexpected error occured while fetching the data"
+            );
+            error.status = resp.status;
+            error.info = resp;
+            throw error;
+          }
+        } else {
+          return data as T;
+        }
+      });
     });
 
 const createUrl = (url: string, queries: Record<string, string>) => {
@@ -50,7 +63,7 @@ const createUrl = (url: string, queries: Record<string, string>) => {
  */
 function useScanService<T>(url, queries) {
   const { data: authData, error: authError } = useBootstrap();
-  const { addMessage, removeAlert } = useAlert();
+  const { addMessage } = useAlert();
   const key = createUrl(url, queries);
 
   const { data, error } = useSWR<T>(
@@ -68,10 +81,8 @@ function useScanService<T>(url, queries) {
       addMessage(
         error instanceof ServiceError ? error.getMessage() : error.message
       );
-    } else {
-      removeAlert();
     }
-  }, [removeAlert, addMessage, error]);
+  }, [addMessage, error]);
 
   return {
     data: data,

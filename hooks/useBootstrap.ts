@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import getConfig from 'next/config'
 import BootstrapType from "../types/bootstrap"
@@ -11,30 +12,25 @@ const fetchAuthWithCookies = (url, cookies) =>
         .then(r => r.json().then(data => data as BootstrapType))
 
 
-/**
- * Bootstrap hook used to retrieve auth token required to contact the scan service.
- * 
- * The cached token will be returned unless it has expired.
- */       
 function useBootstrap() {
 
     const cookies = getCookies({ httpOnly: true });
     const { data, error } = useSWRImmutable([publicRuntimeConfig.bootstrapServiceUrl, cookies], fetchAuthWithCookies)
 
-    if (!error && data) {
-        // Add Z to correctly format timestamp as it is in UTC
-        const expiry = new Date(data.expires_at + 'Z')
-        if (expiry.getTime() <= Date.now()) {
-            mutate([publicRuntimeConfig.bootstrapServiceUrl, cookies])
+    useEffect(() => {
+        if (!error && data) {
+            const expiry = new Date(data.expires_at + 'Z')
+            if (expiry.getTime() <= Date.now()) {
+                mutate([publicRuntimeConfig.bootstrapServiceUrl, cookies])
+            }
         }
-    }
+    }, [data, error])
 
     return {
         data: data,
         error: error
     }
 }
-
 
 
 

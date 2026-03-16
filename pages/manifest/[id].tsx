@@ -1,3 +1,4 @@
+import React, { useMemo } from "react";
 import type { NextPage } from "next";
 import Layout from "../../components/Layout/Layout";
 import getConfig from "next/config";
@@ -38,104 +39,108 @@ const Manifest: NextPage<ManifestProps> = ({
   );
   const { addMessage, removeAlert } = useAlert();
 
-  if (!authData || !authData.access_token) {
+  const collectionId = data ? data.id : id;
+  const pageInCollection = data ? data.selected_page : 0;
+  const accessToken = authData?.access_token;
+  const tokenType = authData?.token_type;
+
+  const config = useMemo(() => {
+    if (!accessToken) return null;
+    return {
+      id: "ads_mirador_viewer",
+      windows: [
+        {
+          imageToolsEnabled: true,
+          allowClose: false,
+          allowFullscreen: true,
+          allowMaximize: false,
+          allowTopMenuButton: true,
+          loadedManifest: `${publicRuntimeConfig.manifestServiceUrl}/${id}/manifest.json`,
+          canvasIndex: page - 1,
+          defaultSearchQuery: textQuery,
+          draggingEnabled: false,
+          sideBarPanel: "search",
+          views: [{ key: "single" }, { key: "book" }],
+        },
+      ],
+      requests: {
+        preprocessors: [
+          (url, options) => {
+            const trustedDomainSuffixes = (process.env.NEXT_PUBLIC_TRUSTED_DOMAINS || '')
+              .split(',')
+              .map(domain => domain.trim())
+              .filter(Boolean);
+
+            const serviceUrl = publicRuntimeConfig.serviceUrl;
+            const serviceHost = new URL(serviceUrl).host;
+
+            const urlHost = (() => {
+              try {
+                return new URL(url).host;
+              } catch {
+                return null;
+              }
+            })();
+
+            if (urlHost === serviceHost ||
+                (trustedDomainSuffixes.some(suffix => urlHost && urlHost.endsWith(suffix)))) {
+              return {
+                ...options,
+                headers: {
+                  Authorization: `${tokenType} ${accessToken}`
+                }
+              };
+            }
+
+            return undefined;
+          }
+        ]
+      },
+      osdConfig: {
+        alwaysBlend: false,
+        blendTime: 0.1,
+        preserveImageSizeOnResize: true,
+        preserveViewport: true,
+        showNavigationControl: false,
+        loadTilesWithAjax: true,
+        ajaxHeaders: {
+          Authorization: "Bearer " + accessToken,
+        },
+      },
+      thumbnailNavigation: {
+        displaySettings: false,
+      },
+      workspace: {
+        showZoomControls: true,
+      },
+      workspaceControlPanel: {
+        enabled: false,
+      },
+      miradorAdsPlugins: {
+        id: id,
+        isArticle: isArticle,
+        isPage: isPage,
+        page: page,
+        collectionId: collectionId,
+        pageInCollection: pageInCollection,
+        authToken: accessToken,
+        manifestBaseUrl: `${publicRuntimeConfig.manifestServiceUrl}`,
+        pdfUrl: `${publicRuntimeConfig.serviceUrl}/image/pdf`,
+        ocrUrl: `${publicRuntimeConfig.metadataServiceUrl}/page/ocr`,
+        addExternalAlert: (msg) => addMessage(msg),
+        removeExternalAlert: () => removeAlert(),
+        defaultDPI: 600,
+      },
+    };
+  }, [id, page, textQuery, isArticle, isPage, accessToken, tokenType, collectionId, pageInCollection, addMessage, removeAlert]);
+
+  if (!config) {
     return (
       <Layout>
         <></>
       </Layout>
     );
   }
-
-  const config = {
-    id: "ads_mirador_viewer",
-    windows: [
-      {
-        imageToolsEnabled: true,
-        allowClose: false,
-        allowFullscreen: true,
-        allowMaximize: false,
-        allowTopMenuButton: true,
-        loadedManifest: `${publicRuntimeConfig.manifestServiceUrl}/${id}/manifest.json`,
-        canvasIndex: page - 1,
-        defaultSearchQuery: textQuery,
-        draggingEnabled: false,
-        sideBarPanel: "search",
-        views: [{ key: "single" }, { key: "book" }],
-      },
-    ],
-    requests: {
-      preprocessors: [
-        (url, options) => {
-          // Get trusted domains from environment variable
-          const trustedDomainSuffixes = (process.env.NEXT_PUBLIC_TRUSTED_DOMAINS || '')
-            .split(',')
-            .map(domain => domain.trim())
-            .filter(Boolean);
-          
-          // Still include the original service host for backward compatibility
-          const serviceUrl = publicRuntimeConfig.serviceUrl;
-          const serviceHost = new URL(serviceUrl).host;
-          
-          const urlHost = (() => {
-            try {
-              return new URL(url).host;
-            } catch {
-              return null;
-            }
-          })();
-      
-          // Check exact match (original behavior) or domain suffix match
-          if (urlHost === serviceHost || 
-              (trustedDomainSuffixes.some(suffix => urlHost && urlHost.endsWith(suffix)))) {
-            return {
-              ...options,
-              headers: {
-                // Preserve existing header behavior
-                Authorization: `${authData?.token_type} ${authData?.access_token}`
-              }
-            };
-          }
-      
-          return undefined;
-        }
-      ]
-    },
-    osdConfig: {
-      alwaysBlend: false,
-      blendTime: 0.1,
-      preserveImageSizeOnResize: true,
-      preserveViewport: true,
-      showNavigationControl: false,
-      loadTilesWithAjax: true,
-      ajaxHeaders: {
-        Authorization: "Bearer " + authData?.access_token,
-      },
-    },
-    thumbnailNavigation: {
-      displaySettings: false,
-    },
-    workspace: {
-      showZoomControls: true,
-    },
-    workspaceControlPanel: {
-      enabled: false,
-    },
-    miradorAdsPlugins: {
-      id: id,
-      isArticle: isArticle,
-      isPage: isPage,
-      page: page,
-      collectionId: data ? data.id : id,
-      pageInCollection: data ? data.selected_page : 0,
-      authToken: authData.access_token,
-      manifestBaseUrl: `${publicRuntimeConfig.manifestServiceUrl}`,
-      pdfUrl: `${publicRuntimeConfig.serviceUrl}/image/pdf`,
-      ocrUrl: `${publicRuntimeConfig.metadataServiceUrl}/page/ocr`,
-      addExternalAlert: (msg) => addMessage(msg),
-      removeExternalAlert: () => removeAlert(),
-      defaultDPI: 600,
-    },
-  };
 
   const adsref = isArticle
     ? `${process.env.NEXT_PUBLIC_ADS_DEFAULT_URL}/abs/${id}/abstract`
@@ -151,12 +156,12 @@ const Manifest: NextPage<ManifestProps> = ({
 };
 
 Manifest.getInitialProps = async ({ query }) => {
-  const { id, full = "", p = 1, art = false } = query;
+  const { id, full = "", p = 1, art } = query;
   const props: ManifestProps = {
     id: String(id),
     textQuery: String(full),
     page: Number(p),
-    isArticle: Boolean(art),
+    isArticle: art === "true" || art === true,
     isPage: !!query.p,
   };
   return props;

@@ -66,17 +66,15 @@ describe('ProtectedImage', () => {
         expect(lastKey).toEqual(['http://test/image.jpg', 'valid-token'])
     })
 
-    it('revokes blob URL on unmount', () => {
-        const revokeObjectURL = jest.fn()
-        global.URL.revokeObjectURL = revokeObjectURL
+    it('renders image when blob URL is available', () => {
         mockUseBootstrap.mockReturnValue({
             data: { access_token: 'valid-token', token_type: 'Bearer' },
         })
 
-        const { unmount } = render(<ProtectedImage src="http://test/image.jpg" width={100} height={100} />)
+        const { container } = render(<ProtectedImage src="http://test/image.jpg" width={100} height={100} />)
 
-        unmount()
-
-        expect(revokeObjectURL).toHaveBeenCalledWith('blob:http://test/fake-blob')
+        const img = container.querySelector('img')
+        expect(img).toBeTruthy()
+        expect(img.getAttribute('src')).toBe('blob:http://test/fake-blob')
     })
 })

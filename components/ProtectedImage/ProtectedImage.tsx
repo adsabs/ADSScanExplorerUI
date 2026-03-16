@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import useBootstrap from '../../hooks/useBootstrap'
 import ImageLoader from '../ContentLoader/ImageLoader'
@@ -22,19 +21,6 @@ const ProtectedImage = ({ src, className, alt, width, height }: ProtectedImagePr
     const { data: authData } = useBootstrap()
     const token = authData?.access_token
     const { data: image, error } = useSWR(token ? [src, token] : null, fetcher)
-    const prevImageRef = useRef<string>(null)
-
-    useEffect(() => {
-        if (prevImageRef.current && prevImageRef.current !== image) {
-            URL.revokeObjectURL(prevImageRef.current)
-        }
-        prevImageRef.current = image
-        return () => {
-            if (prevImageRef.current) {
-                URL.revokeObjectURL(prevImageRef.current)
-            }
-        }
-    }, [image])
 
     if (!image || error) return <ImageLoader width={width} height={height} />
 

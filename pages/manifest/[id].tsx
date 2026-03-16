@@ -46,6 +46,7 @@ const Manifest: NextPage<ManifestProps> = ({
 
   const config = useMemo(() => {
     if (!accessToken) return null;
+    if (isArticle && isLoading) return null;
     return {
       id: "ads_mirador_viewer",
       windows: [
@@ -132,7 +133,7 @@ const Manifest: NextPage<ManifestProps> = ({
         defaultDPI: 600,
       },
     };
-  }, [id, page, textQuery, isArticle, isPage, accessToken, tokenType, collectionId, pageInCollection, addMessage, removeAlert]);
+  }, [id, page, textQuery, isArticle, isPage, isLoading, accessToken, tokenType, collectionId, pageInCollection, addMessage, removeAlert]);
 
   if (!config) {
     return (

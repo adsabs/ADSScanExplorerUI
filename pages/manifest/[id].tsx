@@ -161,7 +161,7 @@ Manifest.getInitialProps = async ({ query }) => {
     id: String(id),
     textQuery: String(full),
     page: Number(p),
-    isArticle: art === "true" || art === true,
+    isArticle: art === "true",
     isPage: !!query.p,
   };
   return props;

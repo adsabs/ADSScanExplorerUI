@@ -122,7 +122,9 @@ interface TabProps {
 
 const SearchResultTab = ({ onSearchComplete }: TabProps) => {
     const router = useRouter()
-    const { q, page = '1', limit = '10', t: tab = 'article', sort = 'bibcode', order = 'asc' } = router.query
+    const { q, page: rawPage, limit: rawLimit, t: tab = 'article', sort = 'bibcode', order = 'asc' } = router.query
+    const page = String(rawPage || '1')
+    const limit = String(rawLimit || '10')
 
     const searchUrl = `${publicRuntimeConfig.metadataServiceUrl}/${tab}/search`
     const searchQueries = { q: q, page: page, limit: limit, sort: `${sort}_${order}` }

@@ -147,6 +147,11 @@ const SearchResultTab = ({ onSearchComplete }: TabProps) => {
         }
     }, [onSearchComplete, data])
 
+    useEffect(() => {
+        if (data && data.pageCount < Number(page)) {
+            onPaginationChanged(1, Number(limit))
+        }
+    }, [data, page, limit])
 
     if (isError) return <p>Sorry something went wrong</p>
     if (isLoading) return <MultiCardLoader count={Number(limit)} />
@@ -163,12 +168,6 @@ const SearchResultTab = ({ onSearchComplete }: TabProps) => {
             </p>
         }
     }
-
-    useEffect(() => {
-        if (data && data.pageCount < Number(page)) {
-            onPaginationChanged(1, Number(limit))
-        }
-    }, [data, page, limit])
 
     if (data.pageCount < Number(page)) return null
 

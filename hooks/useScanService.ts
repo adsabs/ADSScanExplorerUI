@@ -61,7 +61,7 @@ const createUrl = (url: string, queries: Record<string, string>) => {
  * Return type is generic and caller is responsible to provide expected result type.
  * Errors is returned as ServiceError type.
  */
-function useScanService<T>(url, queries) {
+function useScanService<T>(url, queries, options?: { ignore404?: boolean }) {
   const { data: authData, error: authError } = useBootstrap();
   const { addMessage } = useAlert();
   const key = createUrl(url, queries);
@@ -78,9 +78,12 @@ function useScanService<T>(url, queries) {
 
   useEffect(() => {
     if (error) {
-      addMessage(
-        error instanceof ServiceError ? error.getMessage() : error.message
-      );
+      const isExpected404 = options?.ignore404 && error instanceof ServiceError && error.status === 404;
+      if (!isExpected404) {
+        addMessage(
+          error instanceof ServiceError ? error.getMessage() : error.message
+        );
+      }
     }
   }, [addMessage, error]);
 

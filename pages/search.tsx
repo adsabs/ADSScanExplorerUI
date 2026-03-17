@@ -171,7 +171,9 @@ const SearchResultTab = ({ onSearchComplete }: TabProps) => {
         }
     }
 
-    if (data.pageCount < Number(page)) return null
+    if (data.pageCount < Number(page) || data.items.length === 0) {
+        return <p className="text-center">No results on this page. <a href="#" onClick={(e) => { e.preventDefault(); onPaginationChanged(1, Number(limit)) }}>Go to page 1</a></p>
+    }
 
     return (
         <>

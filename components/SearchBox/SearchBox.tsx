@@ -15,8 +15,12 @@ interface SearchBoxProps {
 
 const SearchBox = ({ showExample = false }: SearchBoxProps) => {
     const router = useRouter()
-    const { q, t: tab = 'article' } = router.query
+    const { q } = router.query
     const [query, setQuery] = useState<string>(q ? String(q) : '');
+
+    // Default to 'page' tab for page related queries
+    const pageFilters = ['page', 'page_sequence', 'pagecolor', 'pagetype'];
+    const tab = String(query).split(' ').filter(s => pageFilters.includes(s.toLowerCase().split(':')[0])).length > 0? 'page' : 'article';
 
     const hrefSearch = { pathname: '/search', query: { q: query, page: 1, limit: 10, t: tab} }
 

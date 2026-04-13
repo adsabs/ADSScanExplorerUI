@@ -17,21 +17,20 @@ const { publicRuntimeConfig } = getConfig()
  */
 const Article = ({ article, thumbnail, textQuery }: ArticleProps) => {
     const extraUrl = `${publicRuntimeConfig.metadataServiceUrl}/article/extra/${article.bibcode}`
-    const { data, isLoading, isError } = useScanService<ArticleExtraType>(extraUrl, {})
+    const { data, isLoading } = useScanService<ArticleExtraType>(extraUrl, {}, { ignore404: true })
 
     let query = '?art=true'
     query += textQuery ? `&full=${textQuery}` : ''
     const href = `/manifest/${article.id}${query}`
 
-    /** Article fetch content from multiple sources, display partially loaded result if required */
     const ArticleCard = () => {
         if (isLoading) {
             return <ItemCard subtitle={article.bibcode} text={`${article.pages} pages`} thumbnail={thumbnail} loadingExtra={true} href={href}/>
-        } else if (data && data.title && data.author && !isError) {
-            return <ItemCard title={data.title.toString()} subtitle={article.bibcode} text={`${article.pages} pages`} footer={data.author.toString()} thumbnail={thumbnail} href={href}/>
-        } else {
-            return <ItemCard title={article.bibcode} text={`${article.pages} pages`} thumbnail={thumbnail} href={href}/>
         }
+        const title = data?.title?.toString() || article.bibcode
+        const subtitle = data?.title ? article.bibcode : undefined
+        const footer = data?.author?.toString()
+        return <ItemCard title={title} subtitle={subtitle} text={`${article.pages} pages`} footer={footer} thumbnail={thumbnail} href={href}/>
     }
 
 

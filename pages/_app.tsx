@@ -1,6 +1,6 @@
 import '../styles/globals.css'
 
-import type {AppProps} from 'next/app'
+import type {AppProps, AppContext} from 'next/app'
 import App from 'next/app'
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
@@ -8,6 +8,7 @@ import Router from 'next/router';
 import {config} from '@fortawesome/fontawesome-svg-core'
 import '@fortawesome/fontawesome-svg-core/styles.css'
 import AlertProvider from '../providers/AlertProvider'
+import VariantProvider, {resolveVariant} from '../providers/VariantProvider'
 import '../styles/bootstrap.scss'
 import {SSRProvider} from 'react-bootstrap';
 import {SWRConfig, SWRConfiguration} from 'swr';
@@ -44,16 +45,20 @@ const swrConfig: SWRConfiguration = {
     }
 }
 
-function MyApp({Component, pageProps}: AppProps) {
+type MyAppProps = AppProps & { variant: "ADS" | "SciX" };
+
+function MyApp({Component, pageProps, variant}: MyAppProps) {
     return (
         <SWRConfig value={{
             ...swrConfig,
             provider: () => new Map(),
         }}>
             <SSRProvider>
-                <AlertProvider>
-                    <Component {...pageProps} />
-                </AlertProvider>
+                <VariantProvider variant={variant}>
+                    <AlertProvider>
+                        <Component {...pageProps} />
+                    </AlertProvider>
+                </VariantProvider>
             </SSRProvider>
         </SWRConfig>
     )
@@ -61,11 +66,15 @@ function MyApp({Component, pageProps}: AppProps) {
 
 // Need entire app to be SSR due to the nature of docker setup
 // with runtime configurations that change with the environment.
-MyApp.getInitialProps = async (appContext) => {
+MyApp.getInitialProps = async (appContext: AppContext) => {
     // calls page's `getInitialProps` and fills `appProps.pageProps`
     const appProps = await App.getInitialProps(appContext);
 
-    return {...appProps}
+    const host = typeof window === "undefined"
+        ? appContext.ctx.req?.headers?.host
+        : window.location.hostname;
+
+    return {...appProps, variant: resolveVariant(host)}
 }
 
 export default MyApp

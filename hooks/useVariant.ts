@@ -1,6 +1,7 @@
+import { useVariantContext } from "../providers/VariantProvider";
+
 function useVariant() {
-  console.log(process.env.NEXT_PUBLIC_VARIANT);
-  return process.env.NEXT_PUBLIC_VARIANT === "SCIX" ? "SciX" : "ADS";
+  return useVariantContext();
 }
 
 export default useVariant;

@@ -8,15 +8,13 @@ import { Container, Navbar, Nav } from "react-bootstrap";
 import useVariant from "../../../hooks/useVariant";
 
 interface AdsNavbarProps {
-  adsUrl: string;
+  adsUrl?: string;
 }
 
 /**
  * Render the topmost navigation bar.
  */
-const AdsNavbar: FC<AdsNavbarProps> = ({
-  adsUrl = process.env.NEXT_PUBLIC_ADS_DEFAULT_URL,
-}) => {
+const AdsNavbar: FC<AdsNavbarProps> = ({ adsUrl = "/" }) => {
   const variant = useVariant();
   return (
     <>
@@ -47,12 +45,10 @@ const AdsNavbar: FC<AdsNavbarProps> = ({
           <Navbar.Toggle aria-controls="navbarScroll" />
           <Navbar.Collapse id="navbarScroll" className="justify-content-end ">
             <Nav>
-              <Link href={adsUrl} passHref>
-                <Nav.Link>
-                  <FontAwesomeIcon icon={faRotateBack} />
-                  {` Return to ${variant === "ADS" ? "ADS" : "SciX"}`}
-                </Nav.Link>
-              </Link>
+              <Nav.Link href={adsUrl}>
+                <FontAwesomeIcon icon={faRotateBack} />
+                {` Return to ${variant === "ADS" ? "ADS" : "SciX"}`}
+              </Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>

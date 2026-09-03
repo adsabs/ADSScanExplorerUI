@@ -143,9 +143,7 @@ const Manifest: NextPage<ManifestProps> = ({
     );
   }
 
-  const adsref = isArticle
-    ? `${process.env.NEXT_PUBLIC_ADS_DEFAULT_URL}/abs/${id}/abstract`
-    : undefined;
+  const adsref = isArticle ? `/abs/${id}/abstract` : undefined;
 
   return (
     <Layout adsUrl={adsref}>
